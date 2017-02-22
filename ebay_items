@@ -1,0 +1,50 @@
+#-*- coding: UTF-8-*-
+#按卖家爬取ebay产品的某个参数
+#只需要修改main()里面的关键字(卖家ID)和尾页即可
+from re import findall
+from urllib import urlopen
+
+
+def get_url(keyword,end,start=1,num=0):
+    end = end*1
+    page = start
+    numb = num
+    item_url = []
+    while page <= end:
+        html = urlopen(r'http://www.ebay.com/sch/m.html?_nkw=&_armrs=1&_from=&_ssn=%s&_pgn=%d&_skc=%i&rt=nc'%(keyword,page,numb)).read()
+        pattern = r'<a href="(.+)"  class="vip" title=".+?">(.+?)</a>'
+        item_url.extend(findall(pattern,html))
+        page += 1
+        numb += 50
+    return item_url
+
+
+def get_word(url):
+    global text
+    word = []
+    html = urlopen(url).read()
+    pattern = r'<a href="http://offer.ebay.com/ws/eBayISAPI.*?">(.*?)</a></span>'
+    word.extend(findall(pattern, html))
+    if len(word) == 0:
+        word = ["none"]
+        print word
+        return word
+    else:
+        return word
+
+
+def main():
+    keyword = 'assassin813'  #iloveorange2013 卖家ID
+    end     =  5
+    global text
+    for url,title in get_url(keyword,end):
+        print 'downloading %s' %title
+        text = get_word(url)
+        for i in text:
+            print i
+        f = open('ebay_store_'+keyword+'.xlsm','a') #a是追加模式
+        f.write(url+'\t'+str(i)+'\n')
+        f.close()
+
+if __name__=='__main__':
+    main()
